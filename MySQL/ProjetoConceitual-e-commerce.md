@@ -83,4 +83,4 @@ Este projeto proporciona uma base sólida para gerenciar informações de client
 
 ## Diagrama
 
-![Diagrama EER](/img/EER-diagram-ecommerce.png)
+![Diagrama EER](img/EER-diagram-ecommerce.png)
