@@ -63,7 +63,7 @@ O projeto Conceitual foi desenvolvido para o desafio de código proposto pela pr
 
 ## Considerações Finais
 
-A estrutura proposta contempla desde o gerenciamento de perfis e assinaturas até a organização de conteúdos e listas de reprodução, visando atender às diversas necessidades dos usuários. Pensar e elaborar esse projeto foi um ótimo desafio cujo foco seria a aprendizagem relaionada com a criação de diagramas conceituais de banco de dados.
+A estrutura proposta contempla desde o gerenciamento de perfis e assinaturas até a organização de conteúdos e listas de reprodução, visando atender às diversas necessidades dos usuários. Pensar e elaborar esse projeto foi um ótimo desafio cujo foco seria a aprendizagem relacionada com a criação de diagramas conceituais de banco de dados.
 
 
 ## Tecnologias Utilizadas
