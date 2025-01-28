@@ -1,4 +1,4 @@
-# Projeto Conceitual de Banco de Dados | Streaming de entrenimento audiovisual
+# Projeto Conceitual de Banco de Dados | Streaming de entretenimento audiovisual
 
 O Streamify é um serviço de streaming que oferece uma ampla variedade de filmes, séries, documentários e programas originais. O objetivo é proporcionar entretenimento de alta qualidade para todos os gostos, com um catálogo em constante atualização. O Streamify utiliza algoritmos avançados para recomendar conteúdos baseados nas preferências dos usuários, garantindo uma experiência personalizada e envolvente.
 
