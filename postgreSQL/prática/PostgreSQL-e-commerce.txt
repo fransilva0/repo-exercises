@@ -1,0 +1,378 @@
+-- criando tabelas do projeto
+
+CREATE TABLE endereco (
+    idEndereco SERIAL PRIMARY KEY,
+    rua VARCHAR(50),
+    numero INT,
+    complemento VARCHAR(30),
+    bairro VARCHAR(30),
+    cidade VARCHAR(30),
+    estado VARCHAR(30),
+    cep VARCHAR(15)
+);
+
+CREATE TABLE cliente (
+    idCliente SERIAL PRIMARY KEY,
+    primeiroNome VARCHAR(30),
+    ultimoNome VARCHAR(30),
+    telefone BIGINT,
+    email VARCHAR(30),
+    endereco_idEndereco INT,
+    FOREIGN KEY (endereco_idEndereco) REFERENCES endereco(idEndereco)
+);
+
+CREATE TABLE clientePessoaFisica (
+    idClientePessoaFisica SERIAL PRIMARY KEY,
+    CPF INT,
+    nascimento TIMESTAMP,
+    idCliente INT,
+    FOREIGN KEY (idCliente) REFERENCES cliente(idCliente)
+);
+
+CREATE TABLE clientePessoaJuridica (
+    idClientePessoaJuridica SERIAL PRIMARY KEY,
+    CNPJ INT,
+    razaoSocial VARCHAR(50),
+    nomeFantasia VARCHAR(50),
+    idCliente INT,
+    FOREIGN KEY (idCliente) REFERENCES cliente(idCliente)
+);
+
+CREATE TABLE frete (
+    idFrete SERIAL PRIMARY KEY,
+    valor FLOAT,
+    dataEntregaEstimativa TIMESTAMP,
+    statusEntrega VARCHAR(45)
+);
+
+CREATE TABLE entrega (
+    idEntrega SERIAL PRIMARY KEY,
+    status VARCHAR(45),
+    rastreio VARCHAR(45)
+);
+
+CREATE TABLE pedido (
+    idPedido SERIAL PRIMARY KEY,
+    statusPedido VARCHAR(45),
+    descricao VARCHAR(45),
+    cliente_idCliente INT,
+    frete_idFrete INT,
+    entrega_idEntrega INT,
+    FOREIGN KEY (cliente_idCliente) REFERENCES cliente(idCliente),
+    FOREIGN KEY (frete_idFrete) REFERENCES frete(idFrete),
+    FOREIGN KEY (entrega_idEntrega) REFERENCES entrega(idEntrega)
+);
+
+CREATE TABLE formaPagamento (
+    idFormaPagamento SERIAL PRIMARY KEY,
+    tipoPagamento VARCHAR(20),
+    detalhes VARCHAR(45),
+    cliente_idCliente INT,
+    FOREIGN KEY (cliente_idCliente) REFERENCES cliente(idCliente)
+);
+
+CREATE TABLE cartaoCredito (
+    idCartaoCredito SERIAL PRIMARY KEY,
+    numeroCartao BIGINT,
+    nomeTitular VARCHAR(50),
+    dataValidade TIMESTAMP,
+    formaPagamento_idFormaPagamento INT,
+    FOREIGN KEY (formaPagamento_idFormaPagamento) REFERENCES formaPagamento(idFormaPagamento)
+);
+
+CREATE TABLE produto (
+    idProduto SERIAL PRIMARY KEY,
+    categoria VARCHAR(45),
+    descricao VARCHAR(45),
+    nome VARCHAR(45)
+);
+
+CREATE TABLE preco (
+    idPreco SERIAL PRIMARY KEY,
+    valor FLOAT,
+    dataVigencia TIMESTAMP,
+    produto_idProduto INT,
+    FOREIGN KEY (produto_idProduto) REFERENCES produto(idProduto)
+);
+
+CREATE TABLE estoque (
+    idEstoque SERIAL PRIMARY KEY,
+    local VARCHAR(45)
+);
+
+CREATE TABLE produtoPorPedido (
+    produto_idProduto INT,
+    pedido_idPedido INT,
+    quantidade INT,
+    PRIMARY KEY (produto_idProduto, pedido_idPedido),
+    FOREIGN KEY (produto_idProduto) REFERENCES produto(idProduto),
+    FOREIGN KEY (pedido_idPedido) REFERENCES pedido(idPedido)
+);
+
+CREATE TABLE produto_has_estoque (
+    produto_idProduto INT,
+    estoque_idEstoque INT,
+    quantidade INT,
+    PRIMARY KEY (produto_idProduto, estoque_idEstoque),
+    FOREIGN KEY (produto_idProduto) REFERENCES produto(idProduto),
+    FOREIGN KEY (estoque_idEstoque) REFERENCES estoque(idEstoque)
+);
+
+CREATE TABLE disponibilizaProduto (
+    clientePessoaJuridica_idClientePessoaJuridica INT,
+    produto_idProduto INT,
+    PRIMARY KEY (clientePessoaJuridica_idClientePessoaJuridica, produto_idProduto),
+    FOREIGN KEY (clientePessoaJuridica_idClientePessoaJuridica) REFERENCES clientePessoaJuridica(idClientePessoaJuridica),
+    FOREIGN KEY (produto_idProduto) REFERENCES produto(idProduto)
+);
+
+-- mudanças feitas depois nas tabelas
+
+ALTER TABLE clientePessoaFisica ALTER COLUMN CPF TYPE BIGINT;
+
+ALTER TABLE clientePessoaJuridica ALTER COLUMN CNPJ TYPE BIGINT;
+
+-- preenchendo com dados de teste (SEED)
+
+INSERT INTO endereco (rua, numero, complemento, bairro, cidade, estado, cep) VALUES
+('Rua A', 123, 'Apto 1', 'Centro', 'São Paulo', 'SP', '01001-000'),
+('Rua B', 456, 'Casa', 'Jardins', 'Rio de Janeiro', 'RJ', '22041-001'),
+('Rua C', 789, 'Bloco B', 'Moema', 'São Paulo', 'SP', '04001-002'),
+('Rua D', 321, 'Sala 12', 'Bela Vista', 'São Paulo', 'SP', '01311-000'),
+('Rua E', 654, 'Apto 7', 'Copacabana', 'Rio de Janeiro', 'RJ', '22071-001'),
+('Rua F', 987, 'Casa', 'Lapa', 'São Paulo', 'SP', '05001-003'),
+('Rua G', 741, 'Andar 3', 'Botafogo', 'Rio de Janeiro', 'RJ', '22271-004'),
+('Rua H', 852, 'Apto 5', 'Santana', 'São Paulo', 'SP', '02011-005'),
+('Rua I', 963, 'Casa', 'Barra', 'Rio de Janeiro', 'RJ', '22611-006'),
+('Rua J', 159, 'Bloco C', 'Tijuca', 'Rio de Janeiro', 'RJ', '20511-007');
+
+INSERT INTO cliente (primeiroNome, ultimoNome, telefone, email, endereco_idEndereco) VALUES
+('João', 'Silva', 11987654321, 'joao.silva@email.com', 11),
+('Maria', 'Souza', 21976543210, 'maria.souza@email.com', 12),
+('Carlos', 'Pereira', 31965432109, 'carlos.pereira@email.com', 13),
+('Ana', 'Ferreira', 41954321098, 'ana.ferreira@email.com', 14),
+('Pedro', 'Alves', 51943210987, 'pedro.alves@email.com', 15),
+('Mariana', 'Lima', 61932109876, 'mariana.lima@email.com', 16),
+('Lucas', 'Ribeiro', 71921098765, 'lucas.ribeiro@email.com', 17),
+('Juliana', 'Mendes', 81910987654, 'juliana.mendes@email.com', 18),
+('Fernando', 'Gonçalves', 91909876543, 'fernando.goncalves@email.com', 19),
+('Camila', 'Martins', 10198765432, 'camila.martins@email.com', 20);
+
+INSERT INTO clientePessoaFisica (CPF, nascimento, idCliente) VALUES
+(12345678901, '1990-01-15', 31),
+(23456789012, '1985-05-22', 32),
+(34567890123, '1992-09-10', 33),
+(45678901234, '1988-03-14', 34),
+(56789012345, '1995-07-30', 35),
+(67890123456, '1983-11-25', 36),
+(78901234567, '1979-06-18', 37),
+(89012345678, '2000-12-08', 38),
+(90123456789, '1993-04-05',39),
+(10234567890, '1998-08-19', 40);
+
+INSERT INTO cliente (primeiroNome, ultimoNome, telefone, email, endereco_idEndereco) VALUES
+('Gustavo', 'Santana', 11112345678, 'gustavo.santana@email.com', 11),
+('Renata', 'Carvalho', 22223456789, 'renata.carvalho@email.com', 12),
+('Fábio', 'Silveira', 33334567890, 'fabio.silveira@email.com', 13),
+('Patrícia', 'Pires', 44445678901, 'patricia.pires@email.com', 14),
+('Rafael', 'Barbosa', 55556789012, 'rafael.barbosa@email.com', 15),
+('Aline', 'Neves', 66667890123, 'aline.neves@email.com', 16),
+('Rodrigo', 'Monteiro', 77778901234, 'rodrigo.monteiro@email.com', 17),
+('Tatiana', 'Souza', 88889012345, 'tatiana.souza@email.com', 18),
+('Leonardo', 'Lopes', 99990123456, 'leonardo.lopes@email.com', 19),
+('Fernanda', 'Oliveira', 10111234567, 'fernanda.oliveira@email.com', 20);
+
+INSERT INTO clientePessoaJuridica (CNPJ, razaoSocial, nomeFantasia, idCliente) VALUES
+(11222333444455, 'Empresa A LTDA', 'Loja A', 41),
+(22333444555666, 'Empresa B LTDA', 'Loja B', 42),
+(33444555666777, 'Empresa C SA', 'Comércio C', 43),
+(44555666777888, 'Empresa D ME', 'Indústria D', 44),
+(55666777888999, 'Empresa E EIRELI', 'Distribuidora E', 45),
+(66777888999000, 'Empresa F LTDA', 'Atacado F', 46),
+(77888999000111, 'Empresa G SA', 'Serviços G', 47),
+(88999000111222, 'Empresa H ME', 'Transportes H', 48),
+(99000111222333, 'Empresa I EIRELI', 'Tecnologia I', 49),
+(10001112223344, 'Empresa J LTDA', 'Alimentos J', 50);
+
+INSERT INTO frete (valor, dataEntregaEstimativa, statusEntrega) VALUES
+(15.50, '2025-03-10', 'Pendente'),
+(20.75, '2025-03-11', 'Enviado'),
+(30.00, '2025-03-12', 'Entregue'),
+(10.99, '2025-03-13', 'Pendente'),
+(25.49, '2025-03-14', 'Enviado'),
+(12.75, '2025-03-15', 'Entregue'),
+(40.00, '2025-03-16', 'Pendente'),
+(35.99, '2025-03-17', 'Enviado'),
+(18.20, '2025-03-18', 'Entregue'),
+(22.45, '2025-03-19', 'Pendente');
+
+INSERT INTO entrega (status, rastreio) VALUES
+('Pendente', 'ABC123456BR'),
+('Enviado', 'DEF654321BR'),
+('Entregue', 'GHI789012BR'),
+('Pendente', 'JKL345678BR'),
+('Enviado', 'MNO901234BR'),
+('Entregue', 'PQR567890BR'),
+('Pendente', 'STU234567BR'),
+('Enviado', 'VWX678901BR'),
+('Entregue', 'YZA890123BR'),
+('Pendente', 'BCD012345BR');
+
+INSERT INTO pedido (statusPedido, descricao, cliente_idCliente, frete_idFrete, entrega_idEntrega) VALUES
+('Pendente', 'Pedido 1', 31, 1, 1),
+('Enviado', 'Pedido 2', 32, 2, 2),
+('Entregue', 'Pedido 3', 33, 3, 3),
+('Pendente', 'Pedido 4', 34, 4, 4),
+('Enviado', 'Pedido 5', 35, 5, 5),
+('Entregue', 'Pedido 6', 36, 6, 6),
+('Pendente', 'Pedido 7', 37, 7, 7),
+('Enviado', 'Pedido 8', 38, 8, 8),
+('Entregue', 'Pedido 9', 39, 9, 9),
+('Pendente', 'Pedido 10', 40, 10, 10);
+
+INSERT INTO formaPagamento (tipoPagamento, detalhes, cliente_idCliente) VALUES
+('Cartão de Crédito', 'MasterCard', 31),
+('Cartão de Débito', 'Visa', 32),
+('Boleto', 'Banco do Brasil', 33),
+('Pix', 'Chave: 12345678901', 34),
+('Cartão de Crédito', 'Visa', 35),
+('Cartão de Débito', 'MasterCard', 36),
+('Boleto', 'Caixa Econômica', 37),
+('Pix', 'Chave: 23456789012', 38),
+('Cartão de Crédito', 'American Express', 39),
+('Cartão de Débito', 'Elo', 40);
+
+INSERT INTO cartaoCredito (numeroCartao, nomeTitular, dataValidade, formaPagamento_idFormaPagamento) VALUES
+(1111222233334444, 'João Silva', '2025-12-31', 1),
+(2222333344445555, 'Maria Souza', '2026-01-31', 2),
+(3333444455556666, 'Carlos Pereira', '2027-02-28', 5),
+(4444555566667777, 'Ana Ferreira', '2028-03-31', 6),
+(5555666677778888, 'Pedro Alves', '2029-04-30', 9),
+(6666777788889999, 'Mariana Lima', '2030-05-31', 10),
+(7777888899990000, 'Lucas Ribeiro', '2031-06-30', 1),
+(8888999900001111, 'Juliana Mendes', '2032-07-31', 2),
+(9999000011112222, 'Fernando Gonçalves', '2033-08-31', 5),
+(0000111122223333, 'Camila Martins', '2034-09-30', 6);
+
+INSERT INTO produto (categoria, descricao, nome) VALUES
+('Eletrônicos', 'Smartphone 6.1 polegadas', 'Smartphone A'),
+('Eletrodomésticos', 'Geladeira 300L', 'Geladeira B'),
+('Moda', 'Camiseta tamanho M', 'Camiseta C'),
+('Alimentos', 'Pacote de arroz 1kg', 'Arroz D'),
+('Eletrônicos', 'Notebook 15.6 polegadas', 'Notebook E'),
+('Eletrodomésticos', 'Fogão 4 bocas', 'Fogão F'),
+('Moda', 'Calça jeans tamanho 42', 'Calça G'),
+('Alimentos', 'Pacote de feijão 1kg', 'Feijão H'),
+('Eletrônicos', 'Tablet 10 polegadas', 'Tablet I'),
+('Eletrodomésticos', 'Micro-ondas 20L', 'Micro-ondas J');
+
+INSERT INTO preco (valor, dataVigencia, produto_idProduto) VALUES
+(1000.00, '2025-01-01', 1),
+(2000.00, '2025-01-01', 2),
+(50.00, '2025-01-01', 3),
+(5.00, '2025-01-01', 4),
+(3000.00, '2025-01-01', 5),
+(1500.00, '2025-01-01', 6),
+(80.00, '2025-01-01', 7),
+(4.00, '2025-01-01', 8),
+(600.00, '2025-01-01', 9),
+(400.00, '2025-01-01', 10);
+
+INSERT INTO estoque (local) VALUES
+('Armazém 1'),
+('Armazém 2'),
+('Loja 1'),
+('Loja 2'),
+('Centro de Distribuição');
+
+INSERT INTO produtoPorPedido (produto_idProduto, pedido_idPedido, quantidade) VALUES
+(1, 11, 2),
+(2, 12, 1),
+(3, 13, 5),
+(4, 14, 10),
+(5, 15, 3),
+(6, 16, 2),
+(7, 17, 4),
+(8, 18, 1),
+(9, 19, 6),
+(10, 20, 7);
+
+INSERT INTO produto_has_estoque (produto_idProduto, estoque_idEstoque, quantidade) VALUES
+(1, 1, 50),
+(2, 2, 20),
+(3, 3, 100),
+(4, 4, 200),
+(5, 5, 30),
+(6, 1, 25),
+(7, 2, 40),
+(8, 3, 150),
+(9, 4, 60),
+(10, 5, 35);
+
+INSERT INTO disponibilizaProduto (clientePessoaJuridica_idClientePessoaJuridica, produto_idProduto) VALUES
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 4),
+(5, 5),
+(6, 6),
+(7, 7),
+(8, 8),
+(9, 9),
+(10, 10);
+
+-- consultas de teste
+
+-- Quais são os nomes e e-mails de todos os clientes cadastrados?
+
+SELECT primeiroNome, ultimoNome, email
+FROM cliente;
+
+-- Quais são os produtos da categoria "Eletrônicos" com preço acima de R$500,00?
+
+SELECT produto.nome, preco.valor
+FROM produto
+JOIN preco ON produto.idProduto = preco.produto_idProduto
+WHERE produto.categoria = 'Eletrônicos' AND preco.valor > 500.00;
+
+-- Qual é o valor total (frete + preço dos produtos) de cada pedido?
+
+SELECT 
+    pedido.idPedido,
+    pedido.descricao,
+    SUM(preco.valor * produtoPorPedido.quantidade) + frete.valor AS valorTotal
+FROM pedido
+JOIN frete ON pedido.frete_idFrete = frete.idFrete
+JOIN produtoPorPedido ON pedido.idPedido = produtoPorPedido.pedido_idPedido
+JOIN preco ON produtoPorPedido.produto_idProduto = preco.produto_idProduto
+GROUP BY pedido.idPedido, pedido.descricao, frete.valor;
+
+-- Quais são os 5 produtos mais caros, em ordem decrescente de preço?
+
+SELECT produto.nome, preco.valor
+FROM produto
+JOIN preco ON produto.idProduto = preco.produto_idProduto
+ORDER BY preco.valor DESC
+LIMIT 5;
+
+-- Quais categorias de produtos possuem um valor médio de preço acima de R$100,00?
+
+SELECT produto.categoria, AVG(preco.valor) AS precoMedio
+FROM produto
+JOIN preco ON produto.idProduto = preco.produto_idProduto
+GROUP BY produto.categoria
+HAVING AVG(preco.valor) > 100.00;
+
+-- Quais pedidos foram feitos por clientes com produtos de categorias específicas, como "Eletrodomésticos"?
+
+SELECT 
+    cliente.primeiroNome,
+    cliente.ultimoNome,
+    pedido.idPedido,
+    pedido.descricao,
+    produto.categoria
+FROM pedido
+JOIN cliente ON pedido.cliente_idCliente = cliente.idCliente
+JOIN produtoPorPedido ON pedido.idPedido = produtoPorPedido.pedido_idPedido
+JOIN produto ON produtoPorPedido.produto_idProduto = produto.idProduto
+WHERE produto.categoria = 'Eletrodomésticos';
