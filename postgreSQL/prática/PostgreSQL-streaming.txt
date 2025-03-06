@@ -1,0 +1,179 @@
+-- criação das tabelas
+
+CREATE TABLE usuario (
+    id_usuario SERIAL PRIMARY KEY,
+    primeiro_nome VARCHAR(100) NOT NULL,
+    ultimo_nome VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    data_nascimento DATE
+);
+
+CREATE TABLE perfil (
+    id_perfil SERIAL PRIMARY KEY,
+    nickname VARCHAR(50) NOT NULL UNIQUE,
+    preferencias TEXT,
+    usuario_id_usuario INT NOT NULL,
+    FOREIGN KEY (usuario_id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE
+);
+
+CREATE TABLE conteudo (
+    id_conteudo SERIAL PRIMARY KEY,
+    titulo VARCHAR(255) NOT NULL,
+    descricao TEXT,
+    duracao TIME NOT NULL,
+    tipo VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE lista_reproducao (
+    id_lista_reproducao SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    perfil_id_perfil INT NOT NULL,
+    FOREIGN KEY (perfil_id_perfil) REFERENCES perfil(id_perfil) ON DELETE CASCADE
+);
+
+CREATE TABLE lista_reproducao_conteudo (
+    id_lista_reproducao INT NOT NULL,
+    id_conteudo INT NOT NULL,
+    PRIMARY KEY (id_lista_reproducao, id_conteudo),
+    FOREIGN KEY (id_lista_reproducao) REFERENCES lista_reproducao(id_lista_reproducao) ON DELETE CASCADE,
+    FOREIGN KEY (id_conteudo) REFERENCES conteudo(id_conteudo) ON DELETE CASCADE
+);
+
+CREATE TABLE historico_visualizacao (
+    id_historico SERIAL PRIMARY KEY,
+    data_visualizacao TIMESTAMP NOT NULL,
+    perfil_id_perfil INT NOT NULL,
+    conteudo_id_conteudo INT NOT NULL,
+    FOREIGN KEY (perfil_id_perfil) REFERENCES perfil(id_perfil) ON DELETE CASCADE,
+    FOREIGN KEY (conteudo_id_conteudo) REFERENCES conteudo(id_conteudo) ON DELETE CASCADE
+);
+
+CREATE TABLE assinatura (
+    id_assinatura SERIAL PRIMARY KEY,
+    status VARCHAR(50) NOT NULL,
+    data_inicio DATE NOT NULL,
+    data_fim DATE,
+    usuario_id_usuario INT NOT NULL UNIQUE,
+    FOREIGN KEY (usuario_id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE
+);
+
+CREATE TABLE download (
+    id_download SERIAL PRIMARY KEY,
+    data_download TIMESTAMP NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    perfil_id_perfil INT NOT NULL,
+    conteudo_id_conteudo INT NOT NULL,
+    FOREIGN KEY (perfil_id_perfil) REFERENCES perfil(id_perfil) ON DELETE CASCADE,
+    FOREIGN KEY (conteudo_id_conteudo) REFERENCES conteudo(id_conteudo) ON DELETE CASCADE
+);
+
+-- inserindo dados nas tabelas para teste (SEED)
+
+INSERT INTO usuario (primeiro_nome, ultimo_nome, email, senha, data_nascimento)
+VALUES
+('João', 'Silva', 'joao.silva@email.com', 'senha123', '1990-05-15'),
+('Maria', 'Souza', 'maria.souza@email.com', 'senha456', '1985-09-20'),
+('Carlos', 'Almeida', 'carlos.almeida@email.com', 'senha789', '2000-01-12'),
+('Ana', 'Pereira', 'ana.pereira@email.com', 'senha101', '1995-06-30');
+
+INSERT INTO perfil (nickname, preferencias, usuario_id_usuario)
+VALUES
+('joaosilva', 'ação, comédia', 1),
+('souza85', 'drama, romance', 2),
+('carlosplay', 'sci-fi, aventura', 3),
+('anapereira95', 'fantasia, animação', 4);
+
+INSERT INTO conteudo (titulo, descricao, duracao, tipo)
+VALUES
+('O Senhor dos Anéis', 'Uma aventura épica na Terra Média.', '02:58:00', 'filme'),
+('Interestelar', 'Uma jornada para além do espaço e tempo.', '02:49:00', 'filme'),
+('Dark', 'Uma série sobre mistérios e viagem no tempo.', '00:50:00', 'série'),
+('Vingadores: Ultimato', 'O final épico de uma saga de super-heróis.', '03:01:00', 'filme');
+
+INSERT INTO lista_reproducao (nome, perfil_id_perfil)
+VALUES
+('Favoritos do João', 1),
+('Top Filmes', 2),
+('Maratonas do Carlos', 3),
+('Favoritos da Ana', 4);
+
+INSERT INTO lista_reproducao_conteudo (id_lista_reproducao, id_conteudo)
+VALUES
+(1, 1),
+(1, 2),
+(2, 4),
+(3, 3),
+(4, 1);
+
+INSERT INTO historico_visualizacao (data_visualizacao, perfil_id_perfil, conteudo_id_conteudo)
+VALUES
+('2025-03-01 10:15:00', 1, 1),
+('2025-03-02 14:30:00', 2, 4),
+('2025-03-03 18:00:00', 3, 3),
+('2025-03-04 20:45:00', 4, 2);
+
+INSERT INTO assinatura (status, data_inicio, data_fim, usuario_id_usuario)
+VALUES
+('ativo', '2025-01-01', NULL, 1),
+('inativo', '2024-05-10', '2025-02-15', 2),
+('ativo', '2025-02-20', NULL, 3),
+('ativo', '2025-03-01', NULL, 4);
+
+INSERT INTO download (data_download, status, perfil_id_perfil, conteudo_id_conteudo)
+VALUES
+('2025-03-05 12:00:00', 'concluído', 1, 2),
+('2025-03-06 08:45:00', 'pendente', 2, 1),
+('2025-03-07 16:30:00', 'concluído', 3, 4),
+('2025-03-08 19:00:00', 'erro', 4, 3);
+
+-- consultas 
+
+-- Quais são os nomes completos e os e-mails dos usuários cadastrados no sistema?
+
+SELECT primeiro_nome, ultimo_nome, email
+FROM usuario;
+
+-- Quais usuários nasceram após o ano 2000?
+
+SELECT primeiro_nome, ultimo_nome, data_nascimento
+FROM usuario
+WHERE data_nascimento > '2000-01-01';
+
+-- Qual é a idade atual de cada usuário?
+
+SELECT primeiro_nome, ultimo_nome, 
+       EXTRACT(YEAR FROM AGE(data_nascimento)) AS idade
+FROM usuario;
+
+-- Quem são os usuários, ordenados alfabeticamente pelo último nome?
+
+SELECT primeiro_nome, ultimo_nome, email
+FROM usuario
+ORDER BY ultimo_nome ASC;
+
+-- Quais perfis realizaram mais de um download no sistema?
+
+INSERT INTO download (data_download, status, perfil_id_perfil, conteudo_id_conteudo)
+VALUES
+('2025-03-09 14:30:00', 'concluído', 1, 3);
+
+SELECT perfil_id_perfil, COUNT(*) AS total_downloads
+FROM download
+GROUP BY perfil_id_perfil
+HAVING COUNT(*) > 1;
+
+-- Qual o nome completo dos usuários associados a cada perfil (nickname)?
+
+SELECT perfil.nickname, 
+       usuario.primeiro_nome || ' ' || usuario.ultimo_nome AS nome_completo
+FROM perfil
+JOIN usuario ON perfil.usuario_id_usuario = usuario.id_usuario;
+
+-- Quais conteúdos foram baixados por cada perfil e qual o status desses downloads?
+
+SELECT perfil.nickname, conteudo.titulo, download.status
+FROM download
+JOIN perfil ON download.perfil_id_perfil = perfil.id_perfil
+JOIN conteudo ON download.conteudo_id_conteudo = conteudo.id_conteudo;
+
